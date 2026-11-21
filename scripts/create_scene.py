@@ -184,17 +184,8 @@ def main():
     rim.data.color = (.05, .3, 1)
     rim.data.size = 10
     look_at(rim, (0, 0, 0))
-    scene.use_nodes = True
-    nodes = scene.node_tree.nodes
-    nodes.clear()
-    rl = nodes.new("CompositorNodeRLayers")
-    glare = nodes.new("CompositorNodeGlare")
-    glare.glare_type = "FOG_GLOW"
-    glare.threshold = 1.2
-    glare.quality = "MEDIUM"
-    comp = nodes.new("CompositorNodeComposite")
-    scene.node_tree.links.new(rl.outputs["Image"], glare.inputs["Image"])
-    scene.node_tree.links.new(glare.outputs["Image"], comp.inputs["Image"])
+    # Blender 5 changed compositor scene-tree handling. Keep this scene
+    # compatible across Blender 4.x/5.x; emissive materials provide neon.
 
     # Opening title as emissive 3D text, fades away after the opening
     title_mat = mat("Title glow", (.15, .75, 1), 0, .3, 3.0)
