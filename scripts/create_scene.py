@@ -67,7 +67,8 @@ def main():
 
     scene = bpy.context.scene
     scene.render.engine = "BLENDER_EEVEE_NEXT" if "BLENDER_EEVEE_NEXT" in bpy.types.RenderSettings.bl_rna.properties["engine"].enum_items.keys() else "BLENDER_EEVEE"
-    scene.eevee.taa_render_samples = samples if hasattr(scene, "eevee") else samples
+    if hasattr(scene, "eevee"):
+        scene.eevee.taa_render_samples = samples
     scene.render.resolution_x = width
     scene.render.resolution_y = height
     scene.render.resolution_percentage = 100
