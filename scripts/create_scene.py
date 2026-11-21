@@ -25,8 +25,12 @@ def mat(name, color, metallic=0.0, roughness=0.4, emission=0.0):
     bs.inputs["Metallic"].default_value = metallic
     bs.inputs["Roughness"].default_value = roughness
     if emission:
-        bs.inputs["Emission Color"].default_value = (*color, 1)
-        bs.inputs["Emission Strength"].default_value = emission
+        emission_color = bs.inputs.get("Emission Color") or bs.inputs.get("Emission")
+        if emission_color:
+            emission_color.default_value = (*color, 1)
+        emission_strength = bs.inputs.get("Emission Strength")
+        if emission_strength:
+            emission_strength.default_value = emission
     return m
 
 def cube(name, loc, scale, material, bevel=0.0):
@@ -67,7 +71,7 @@ def main():
 
     scene = bpy.context.scene
     scene.render.engine = "BLENDER_EEVEE_NEXT" if "BLENDER_EEVEE_NEXT" in bpy.types.RenderSettings.bl_rna.properties["engine"].enum_items.keys() else "BLENDER_EEVEE"
-    if hasattr(scene, "eevee"):
+    if hasattr(scene, "eevee") and hasattr(scene.eevee, "taa_render_samples"):
         scene.eevee.taa_render_samples = samples
     scene.render.resolution_x = width
     scene.render.resolution_y = height
