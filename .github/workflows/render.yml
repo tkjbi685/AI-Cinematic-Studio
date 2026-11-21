@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - .github/workflows/render.yml
+      - scripts/create_scene.py
   workflow_dispatch:
     inputs:
       quality:
