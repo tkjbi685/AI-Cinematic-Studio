@@ -1,6 +1,10 @@
 name: Render cinematic MP4
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/render.yml
   workflow_dispatch:
     inputs:
       quality:
@@ -46,8 +50,8 @@ jobs:
 
       - name: Generate animated 3D scene
         env:
-          QUALITY: ${{ inputs.quality }}
-          FILM_TITLE: ${{ inputs.title }}
+          QUALITY: ${{ inputs.quality || 'draft' }}
+          FILM_TITLE: ${{ inputs.title || 'NEON RUN' }}
         run: |
           mkdir -p renders
           blender --background --python scripts/create_scene.py -- \
@@ -61,7 +65,7 @@ jobs:
 
       - name: Encode MP4
         env:
-          QUALITY: ${{ inputs.quality }}
+          QUALITY: ${{ inputs.quality || 'draft' }}
         run: |
           case "$QUALITY" in
             draft) SOURCE_FPS=8 ;;
