@@ -2,7 +2,7 @@
 
 A free, GitHub Actions-powered cinematic 3D video generator. Start a render from the **Actions** tab and download the resulting MP4 artifact.
 
-> **Current engine:** procedural 3D scene rendered with Blender (Cycles CPU), then encoded with FFmpeg. It does not call paid APIs or require secrets.
+> **Current engine:** procedural 3D scene rendered with Blender (Eevee), then encoded with FFmpeg. It does not call paid APIs or require secrets.
 >
 > **Honest quality note:** GitHub-hosted runners do not provide a guaranteed dedicated GPU. The initial renderer prioritizes a complete, reproducible 60-second cinematic sequence over claiming studio-grade photorealism. Render time and quality depend on runner limits.
 
