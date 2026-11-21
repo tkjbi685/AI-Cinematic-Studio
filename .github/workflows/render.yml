@@ -1,0 +1,85 @@
+name: Render cinematic MP4
+
+on:
+  workflow_dispatch:
+    inputs:
+      quality:
+        description: Render quality (higher takes longer)
+        required: true
+        type: choice
+        default: standard
+        options:
+          - draft
+          - standard
+          - high
+      title:
+        description: Opening title shown in the film
+        required: true
+        default: NEON RUN
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cinematic-render-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  render:
+    name: Render 60-second 3D film
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - name: Check out project
+        uses: actions/checkout@v4
+
+      - name: Install Blender and FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y blender ffmpeg
+
+      - name: Show renderer versions
+        run: |
+          blender --version
+          ffmpeg -version | head -n 2
+
+      - name: Generate animated 3D scene
+        env:
+          QUALITY: ${{ inputs.quality }}
+          FILM_TITLE: ${{ inputs.title }}
+        run: |
+          mkdir -p renders
+          blender --background --python scripts/create_scene.py -- \
+            --output "$PWD/renders" \
+            --quality "$QUALITY" \
+            --title "$FILM_TITLE"
+
+      - name: Render animation frames
+        run: |
+          blender --background renders/cinematic.blend --render-output "$PWD/renders/frame_" --render-format PNG --render-anim
+
+      - name: Encode MP4
+        env:
+          QUALITY: ${{ inputs.quality }}
+        run: |
+          case "$QUALITY" in
+            draft) SOURCE_FPS=8 ;;
+            standard) SOURCE_FPS=10 ;;
+            high) SOURCE_FPS=12 ;;
+          esac
+          ffmpeg -y -framerate "$SOURCE_FPS" -i renders/frame_%04d.png \
+            -vf "fps=24,format=yuv420p" \
+            -c:v libx264 -preset medium -crf 19 \
+            -movflags +faststart -t 60 renders/cinematic.mp4
+          ffprobe -v error -show_entries format=duration,size \
+            -show_entries stream=codec_name,width,height,r_frame_rate \
+            -of default=noprint_wrappers=1 renders/cinematic.mp4
+
+      - name: Upload MP4 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cinematic-video-mp4
+          path: renders/cinematic.mp4
+          if-no-files-found: error
+          retention-days: 7
